@@ -1,0 +1,196 @@
+/**
+ * File:    FerrisWheel.cga
+ * Created: 16 Oct 2019 15:13:07 GMT
+ * Author:  gostefan
+ */
+
+version "2019.1"
+
+@Group(Wheel)
+@Handle(shape=DiameterHandle, axis=x)
+attr diameter = 50
+
+@Handle(shape=HandleCore, axis=x, minSize=20, skin=diameterArrow)
+attr coreDiameter = 1.5
+
+@Handle(shape=HandleWheel, axis=y)
+attr width = 5
+
+@Range(min=0)
+attr strutRadius = 0.05
+
+@Range(min=0, max=360)
+@Handle(shape=WheelRotateHandle., type=angular, axis=y, skin=ring, occlusion=false)
+attr rotation = 5
+
+@Group(Wagon)
+@Range(min=2, stepsize=1, restricted=true)
+attr wagons = 20
+
+@Handle(shape=Wagon, axis=y, repeat=none)
+attr wagonHeight = 4
+
+@Handle(shape=Wagon, axis=x, repeat=none)
+attr wagonDiameter = 3
+
+@Color
+@Handle(shape=Wagon, type=color, repeat=none)
+attr wagonColor = "#FF00FF"
+
+@Group(Arms)
+attr armGirth = 15
+
+@Range(min=0)
+attr armSide = 5
+
+attr hasTwoArms = true
+
+const centerHeight = diameter/2 + wagonHeight
+
+@StartRule
+Lot -->
+	s(0,0,0)
+	center(xyz)
+
+	Wheel
+	HandleWheel
+	Arms
+
+HandleWheel -->
+	r(0,0,90)
+	primitiveCylinder(6, diameter/2, 0)
+	t(diameter/2 + wagonHeight, 0, 0)
+	DiameterHandle
+DiameterHandle --> 
+	s(coreDiameter, 0, coreDiameter)
+	center(xz)
+	HandleCore
+HandleCore --> NIL
+
+Wheel -->
+	r(0,0,90)
+	r(0, rotation, 0)
+	t((cos(rotation))*centerHeight, 0, sin(rotation)*centerHeight)//diameter*sin(rotation)/2)
+	WheelCore
+	primitiveCylinder(wagons, diameter/2, width)
+	set(trim.vertical, false)
+	comp(f){top: NIL
+	       |bottom: NIL
+	       |all: WheelElement
+	}
+
+WheelCore -->
+	primitiveCylinder(30, coreDiameter/2, width)
+	A.
+	s(0,0,0)
+	center(xz)
+	WheelRotateHandle.
+
+WheelElement-->
+	WagonAndStrut
+	CenterPlane
+
+const SpokeAngle = 360/wagons
+
+CenterPlane -->
+	r(0, -SpokeAngle/2,0)
+	extrude(-diameter/2)
+	comp(f) { left : CenterStruts
+	        | front: setPivot(xyz, 2)
+	                 ConnectingStruts
+	        | back: ConnectingStruts
+	}
+	
+CenterStruts -->
+	[t(scope.sx/2, 0, 0) Strut]
+	[t(-scope.sx/2, 0, 0) Strut]
+	split(y) { ~scope.sx : 
+		SquareCenterStrut
+		DiagonalCenterStrut
+	}*
+
+SquareCenterStrut -->
+	case split.index > 0:
+		t(0, scope.sy/2, 0)
+		s(scope.sy, scope.sx, '1)
+		r(0,0,-90)
+		Strut
+	else:
+		NIL
+
+DiagonalCenterStrut -->
+	case split.index == 0:
+		NIL
+	case split.index % 2 == 0:
+		r(0,0,-atan2(scope.sx, scope.sy))
+		s(0, sqrt(scope.sx*scope.sx+scope.sy*scope.sy), 0)
+		Strut
+	else:
+		t(scope.sx, 0, 0)
+		r(0,0,atan2(scope.sx, scope.sy))
+		s(0, sqrt(scope.sx*scope.sx+scope.sy*scope.sy), 0)
+		Strut
+
+ConnectingStruts -->
+	setPivot(yzx, 0)
+	split(z) { ~width : [
+			r(SpokeAngle/2, 0, 0)
+			s(0, scope.sy*(split.total - split.index)/split.total, 0)
+			Strut
+		]
+	}*
+
+Strut -->
+	primitiveCylinder(16, strutRadius, scope.sy)
+
+WagonAndStrut -->
+	trim
+	[s(0,'1,0) Strut]
+	[
+		s(0, 0, 0) 
+		center(y)
+		alignScopeToAxes(world.y)
+		B.
+		t(-wagonDiameter/2, -wagonHeight, -wagonDiameter/2)
+		s(wagonDiameter, wagonHeight, wagonDiameter)
+		Wagon
+	]
+
+Wagon -->
+	Strut
+	[ primitiveCylinder(16, wagonDiameter/2, 1.5) color(wagonColor) A. ]
+	t(0, 3, 0)
+	primitiveCylinder(16, wagonDiameter/2, .2)
+	set(trim.horizontal, true)
+	color(wagonColor)
+	comp (f) { top: taper(wagonHeight - 3.5) A.
+	         | side: A.
+	}
+
+Arms -->
+	case hasTwoArms:
+		Arm
+		r(0, 180, 0)
+		t(width, 0, 0)
+		Arm
+	else:
+		Arm
+
+Arm -->
+	s(armSide, centerHeight, armGirth/2)
+	t(0,0, armGirth/2)
+	Pylon(-1)
+	t(0, 0, -armGirth)
+	Pylon(1)
+
+const PylonLength = sqrt(armGirth*armGirth/4+centerHeight*centerHeight+armSide*armSide)
+const PylonXAngle = atan2(armGirth/2, centerHeight)
+const PylonZAngle = atan2(armSide, centerHeight)
+Pylon(directionFactor) -->
+	r(directionFactor*PylonXAngle, 0, 0)
+	setPivot(xyz, 1)
+	r(PylonZAngle, 0, 0)
+	setPivot(xyz, 3)
+	t(armSide, 0, 0)
+	s(0, PylonLength, 0)
+	primitiveCylinder(16, .5, scope.sy)
