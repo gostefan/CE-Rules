@@ -1,0 +1,110 @@
+/**
+ * File:    tutorialIcon.cga
+ * Created: 14 Mar 2019 17:36:34 GMT
+ * Author:  stef8093
+ */
+
+version "2019.0"
+
+@Order(0)
+@Handle(type=color, shape=Square, reference=center, occlusion=false)
+@Color
+attr hatColor = "#D9D9D9"
+
+@Handle(type=linear, shape=CylinderHandle., axis=y, reference=radial)
+@Range(min=0.01, max=1)
+attr cylinderFactor = 0.8
+
+@Order(10)
+@Handle(type=linear, shape=CylinderHandle., slip=screen, reference=center)
+@Range(min=0.1)
+attr cylinderHeight = 30
+
+@Order(20)
+@Handle(type=linear, shape=SquareHandle., axis=y, slip=screen, reference=center)
+@Range(min=0.1)
+attr squareHeight = 3
+
+@Order(30)
+@Handle(type=linear, shape=PendulumSideHandle., axis=x)
+@Range(min=0.1)
+attr pendulumWidth = 1
+
+@Order(40)
+@Handle(type=linear, shape=PendulumSideHandle.)
+@Range(min=0.1)
+attr pendulumLength = 10
+
+@StartRule
+Lot -->
+	color(hatColor)
+	Cylinder
+	t(0, cylinderHeight, 0)
+	Square
+	t(0, squareHeight, 0)
+	Pendulum
+	
+Cylinder -->
+	s('cylinderFactor, cylinderHeight, 'cylinderFactor)
+	t('((1-cylinderFactor)/2), 0, '((1-cylinderFactor)/2))
+	primitiveCylinder(64)
+	CylinderHandle.
+
+Square -->
+	s('1, squareHeight, '1)
+	primitiveCube()
+	SquareHandle.
+
+Pendulum -->
+	PendulumSphereTop
+	PendulumTop
+	t('1, 0, '0.5)
+	t(0.5*pendulumWidth, 0, 0)
+	PendulumJoint
+	t(-0.5*pendulumWidth, 0.5*pendulumWidth, -0.5*pendulumWidth)
+	PendulumSide
+	t(0, -pendulumLength, 0)
+	PendulumEnd
+
+PendulumSphereTop -->
+	t('0.5, 0, '0.5)
+	s(1.2*pendulumWidth, 1.2*pendulumWidth, 1.2*pendulumWidth)
+	t(-0.6*pendulumWidth, -0.1*pendulumWidth, -0.6*pendulumWidth)
+	primitiveSphere()
+	
+PendulumTop -->
+	t(0, 0, '0.5)
+	rotateScope(0, 0, 90)
+	s(pendulumWidth, '0.5, pendulumWidth)
+	s('1, scope.sy + 0.5*pendulumWidth, '1)
+	t(0, -0.5*pendulumWidth, -0.5*pendulumWidth)
+	primitiveCylinder()
+
+PendulumJoint -->
+	#PendulumJointTop.
+	PendulumJointBall
+
+PendulumJointBall -->
+	s(1.2*pendulumWidth, 1.2*pendulumWidth, 1.2*pendulumWidth)
+	t(-0.6*pendulumWidth, -0.1*pendulumWidth, -0.6*pendulumWidth)
+	primitiveSphere()
+
+PendulumSide -->
+	s(pendulumWidth, -pendulumLength, pendulumWidth)
+	primitiveCylinder()
+	PendulumSideHandle.
+	
+PendulumEnd -->
+	PendulumSphere
+	PendulumCone
+
+PendulumSphere -->
+	t(-0.1*pendulumWidth, -0.6*pendulumWidth, -0.1*pendulumWidth)
+	s(1.2*pendulumWidth, 1.2*pendulumWidth, 1.2*pendulumWidth)
+	primitiveSphere()
+
+PendulumCone -->
+	t(-0.5*pendulumWidth, 0, -0.5*pendulumWidth)
+	t(0, -4*pendulumWidth, 0)
+	s(2*pendulumWidth, 4*pendulumWidth, 2*pendulumWidth)
+	primitiveCone()
