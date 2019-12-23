@@ -1,0 +1,26 @@
+/**
+ * File:    ScatteredSnowFlake.cga
+ * Created: 23 Dec 2019 21:02:39 GMT
+ * Author:  gostefan
+ */
+
+version "2019.1"
+
+
+import Flake:"rules/SnowFlake.cga"
+
+attr count = 20
+
+@StartRule
+ScatterFlakesSurface -->
+	scatter(surface, count, uniform) {
+		r(rand(0, 90), rand(0, 90), rand(0, 90))
+		Flake.Lot
+	}
+
+@StartRule
+ScatterFlakesVolume -->
+	scatter(volume, count, uniform) {
+		r(rand(0, 90), rand(0, 90), rand(0, 90))
+		Flake.Lot
+	}

@@ -1,0 +1,123 @@
+/**
+ * File:    SnowFlake.cga
+ * Created: 14 Dec 2019 15:11:38 GMT
+ * Author:  gostefan
+ */
+
+version "2019.1"
+
+@Description("If enabled will flip the flake to vertical along the first edge.")
+attr vertical = false
+
+@Handle(shape=Arm, axis=y, repeat=none)
+attr baseArmLength = rand(1,10)
+
+@Handle(shape=Arm, axis=x)
+attr baseArmWidth = baseArmLength / 50
+
+@Handle(type=color, shape=Flake)
+attr color = "#C3CBD9" // Color credit to: http://www.perbang.dk/rgb/C3CBD9/
+
+@Range(min=2)
+attr arms = 6
+const offset = cos(360 / arms / 2)
+
+attr armSplits = randomArmSplits(baseArmLength)
+randomArmSplits(l) = randomArmSplits(l, rand(baseArmWidth,baseArmLength/5))
+randomArmSplits(l, r) =
+	case l > 0:
+		r + ";" + randomArmSplits(l-r, rand(baseArmWidth,baseArmLength/5))
+	else:
+		"" + r
+
+attr armLengths = randomArmLengths(listSize(armSplits))
+randomArmLengths(i) = randomArmLengths(i, rand(baseArmWidth,baseArmLength/2))
+randomArmLengths(i, r) =
+	case i > 0:
+		r + ";" + randomArmLengths(i-1, rand(2*baseArmWidth,baseArmLength/2))
+	else:
+		"" + r
+
+attr resolution = 20
+
+@StartRule
+Lot -->
+	case vertical:
+		setPivot(yzx, 3)
+		Flake
+	else:
+		Flake
+		
+Flake -->
+	color(color)
+	set(material.opacity, 0.5)
+	s(0,0,0)
+	center(xz)
+	primitiveCylinder(arms, 1, baseArmWidth)
+	comp(f) {
+		side:
+			t(0, 0, -offset)
+			ArmPre
+	}
+
+ArmPre -->
+	s(baseArmWidth, baseArmWidth, 0)
+	center(xz)
+	r(90, 0, 0)
+	t(0, 0, -baseArmWidth)
+	s(baseArmWidth, baseArmLength, baseArmWidth)
+	//setPivot(zxy, 0) // Why does setPivot lose the z length?
+	//Why does setPivot lose the trim planes? It's hard to setup the cylinder correctly without it.
+	Arm
+
+Arm -->
+	primitiveCylinder(resolution)
+	SplitArmRecursive(1)
+	RoundEnd
+
+SplitArmRecursive(i) -->
+	case i <= listSize(armSplits):
+		split(y) {
+			float(listItem(armSplits, i)) : ArmPart(i)
+			| ~1 : SplitArmRecursive(i+1)
+		}
+	else:
+		ArmPart(i)
+
+ArmPart(i) -->
+	comp(f) {
+		top: NIL
+		|bottom: NIL
+		|all= A.
+	}
+	s(0, 0, '1)
+	center(xz)
+	[
+		r(0, 60, 0)
+		RoundEndCylinder(float(listItem(armLengths, i)))
+	]
+	[
+		r(0, -60, 0)
+		RoundEndCylinder(float(listItem(armLengths, i)))
+	]
+
+RoundEndCylinder(length) -->
+	primitiveCylinder(resolution, baseArmWidth/2, length)
+	comp(f) {
+		top: setPivot(zxy, 0) RoundEnd
+		|bottom: NIL
+		|all= A.
+	}
+
+RoundEnd -->
+	t(0, '1, 0)
+	s('1, scope.sx, '1)
+	t(0, -scope.sx/2, 0)
+	primitiveSphere(resolution, resolution/2)
+	split(y) { // We only want half the sphere
+		~1 : NIL
+		| ~1 : comp(f) {
+			bottom: NIL // Remove back side of rounded ends
+			| all= A.
+		}
+	}
