@@ -1,37 +1,24 @@
-## Welcome to GitHub Pages
+# Welcome to my Esri CityEngine playground
 
-You can use the [editor on GitHub](https://github.com/gostefan/CE-Rules/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+## What is this?
+I like to play around with Esri's Computer Generated Architecture (CGA) rule files. And sometimes I actually create something you can look at.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+These working rules are published here so others might get inspired on writing (and how to write) their own rules.
 
-### Markdown
+## Current Contents
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Ferris Wheel
 
-```markdown
-Syntax highlighted code block
+### Graduation Hat
 
-# Header 1
-## Header 2
-### Header 3
+### Snow Flake
 
-- Bulleted
-- List
+## Support / Warranty
+I provide all content with absolutely no support or warranty whatsoever. If you file an issue I might be willing to fix bugs or implement features but I refuse any and all guarantees to do so.
 
-1. Numbered
-2. List
+## 3rd party licenses
+### Snow Flake
+The color for the snow flake was taken from http://www.perbang.dk/rgb/C3CBD9/
 
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/gostefan/CE-Rules/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+## License
+All available files (CGA-rule files, scene files and (possibly in the future) textures I license under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) unless otherwise stated (especially if noted as 3rd party content).
