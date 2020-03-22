@@ -1,0 +1,34 @@
+/**
+ * File:    wave.cga
+ * Created: 21 Mar 2020 12:12:31 GMT
+ * Author:  Stefan
+ */
+
+version "2019.1"
+
+attr waveWidth = 0.1
+attr waveHeight = 0.025
+attr baseColor = "#888888"
+@Enum("Low", "Medium")
+attr lod = "Medium"
+
+@StartRule
+Lot -->
+	color(baseColor)
+	[case lod == "Low":
+		set(material.shader, "CityEnginePBRShader")
+		setNormals(hard)
+		setupProjection(5, scope.xz, waveWidth, '1)
+		projectUV(5)
+		set(material.normalmap, "WaveNormalMap.png")
+		A.
+	else:
+		split(x) {
+			waveWidth: Wave(scope.sx)
+		}*
+	]
+
+Wave(cutWidth) -->
+	s(waveWidth, waveHeight, '1)
+	i("WaveLow.obj")
+	split(x) { cutWidth : A. }
