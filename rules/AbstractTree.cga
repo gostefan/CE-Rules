@@ -1,0 +1,103 @@
+/**
+ * File:    AbstractTree.cga
+ * Created: 16 Jan 2022 16:39:04 GMT
+ * Author:  Stefan
+ */
+
+version "2021.1"
+
+@Color
+attr leafColor = "#2a7e19"
+
+@Color
+attr trunkColor = "#53350A"
+
+attr height = 15
+attr trunkWidth = 0.4
+attr minLeafHeight = 2
+attr maxRadius = 5
+
+@Range(min=1, stepsize=1, restricted=true)
+attr leafCount = 60
+
+@Range(min=10, max=179, restricted=true)
+attr minAngleWidth = 40
+@Range(min=10, max=179, restricted=true)
+attr maxAngleWidth = 120
+attr leafRadiusVariance = 0.3
+
+const radiusPerHeight = (maxRadius - trunkWidth/2) / (height - minLeafHeight)
+
+@StartRule
+Lot -->
+	color("#DDDDDD")
+	Trunk
+	Leaves
+
+Leaves -->
+	color(leafColor)
+	t(0.5, 0, 0.5)
+	Leaves(leafCount)
+
+Leaves(remainingLeaves) -->
+	case remainingLeaves > 0:
+		Leaf
+		Leaves(remainingLeaves-1)
+	else:
+		NIL
+
+Leaf with (
+		leafHeight := rand(minLeafHeight, height)
+		centerAngle := rand(0, 360)
+		angleWidth := rand(minAngleWidth, maxAngleWidth)
+		leafRadius := (height-leafHeight)*radiusPerHeight * (1 + rand(-leafRadiusVariance,leafRadiusVariance)) + trunkWidth/2) -->
+	LeafStem(leafHeight, centerAngle, leafRadius)
+	t(0, leafHeight, 0)
+	r(0, centerAngle-angleWidth/2, 0)
+	t(-leafRadius, 0, -leafRadius)
+	s(2*leafRadius, 0, 2*leafRadius)
+
+	primitiveDisk
+	offset(-0.1*leafRadius)
+	comp(f) {
+		border = LeafBorder(angleWidth, leafRadius)
+	}
+
+LeafBorder(angleWidth, leafRadius) -->
+	split(x) {
+		~1: NIL |
+		~1: 
+			rotateScope(0, 0, angleWidth)
+			split(x) {
+				leafRadius: LeafSplit1 |
+				~1: NIL
+			}
+	}
+
+LeafSplit1 -->
+	comp (f) {
+		all:
+			rotateScope(0, 0, 90)
+			t(0, 0, -scope.sx/2)
+			s('1, '1, scope.sx)
+			Cylinder
+	}
+
+LeafStem(leafHeight, centerAngle, leafRadius) -->
+	t(0, leafHeight, 0)
+	r(0, centerAngle + 180, 0)
+
+	t(0.01*leafRadius, 0, -leafRadius)
+	s(-0.02*leafRadius, leafRadius, -0.02*leafRadius)
+	r(90, 0, 0)
+	Cylinder
+
+Trunk -->
+	color(trunkColor)
+	s(trunkWidth, height, trunkWidth)
+	center(xz)
+	Cylinder
+
+Cylinder -->
+	primitiveCylinder(20)
+	

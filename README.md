@@ -22,6 +22,11 @@ A randomized snow flake. Changing the Seed changes the snow flake's arms.
 
 ![Example Snow Flake](https://github.com/gostefan/CE-Rules/raw/master/images/Snowflake.png)
 
+### Abstract Tree
+Inspired by the [AbstractTree in London Heathrow](https://github.com/gostefan/CE-Rules/raw/master/images/AbstractTreeInspiration.jpg) this is a very simple and abstract representation of a tree.
+
+![Example Abstract Tree](https://github.com/gostefan/CE-Rules/raw/master/images/AbstractTree.png)
+
 ## Support / Warranty
 I provide all content with absolutely no support or warranty whatsoever. If you file an issue I might be willing to fix bugs or implement features but I refuse any and all guarantees to do so.
 
